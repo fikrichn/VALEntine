@@ -171,7 +171,7 @@ function celebrate() {
     emojiArea.innerHTML = `
         <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif" 
              alt="Happy Valentine GIF" 
-             style="width: 1000px; height: auto; margin-top: 15px; border-radius: 20px;">
+             style="width: 100px; height: 100px; margin-top: 15px; border-radius: 20px;">
     `;
     
     // 5. Jalankan efek hati
