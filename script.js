@@ -1,44 +1,31 @@
-// Initialize configuration
+// ================= CONFIG =================
 const config = window.VALENTINE_CONFIG;
 
 let noScale = 1;
 let yesScale = 1;
 
 let minesweeperBombs = null;
-let minesweeperSize = 5;
-let minesweeperBombCount = 5;
+const minesweeperSize = 5;
+const minesweeperBombCount = 5;
 
-
-// Validate configuration
-function validateConfig() {
-    const warnings = [];
-    if (!config.valentineName) {
-        config.valentineName = "My love";
-    }
-}
-
-// Set page title
+// ================= INIT =================
 document.title = config.pageTitle;
 
-// Initialize the page content when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
-    validateConfig();
+    if (!config.valentineName) config.valentineName = "My love";
 
-    // Set texts from config
-    document.getElementById('valentineTitle').textContent = `${config.valentineName}, in 2000 years`;
-    
-    // Set first question texts
+    document.getElementById('valentineTitle').textContent =
+        `${config.valentineName}, in 2000 years`;
+
     document.getElementById('question1Text').textContent = config.questions.first.text;
     document.getElementById('yesBtn1').textContent = config.questions.first.yesBtn;
     document.getElementById('noBtn1').textContent = config.questions.first.noBtn;
     document.getElementById('secretAnswerBtn').textContent = config.questions.first.secretAnswer;
-    
-    // Set second question texts
+
     document.getElementById('question2Text').textContent = config.questions.second.text;
     document.getElementById('startText').textContent = config.questions.second.startText;
     document.getElementById('nextBtn').textContent = config.questions.second.nextBtn;
-    
-    // Set third question texts
+
     document.getElementById('question3Text').textContent = config.questions.third.text;
     document.getElementById('yesBtn3').textContent = config.questions.third.yesBtn;
     document.getElementById('noBtn3').textContent = config.questions.third.noBtn;
@@ -48,234 +35,139 @@ window.addEventListener('DOMContentLoaded', () => {
     initLoveMeter();
 });
 
-// Create floating hearts and bears
+// ================= FLOATING =================
 function createFloatingElements() {
     const container = document.querySelector('.floating-elements');
-    config.floatingEmojis.hearts.forEach(heart => {
+    [...config.floatingEmojis.hearts, ...config.floatingEmojis.bears].forEach(e => {
         const div = document.createElement('div');
         div.className = 'heart';
-        div.innerHTML = heart;
-        setRandomPosition(div);
-        container.appendChild(div);
-    });
-    config.floatingEmojis.bears.forEach(bear => {
-        const div = document.createElement('div');
-        div.className = 'bear';
-        div.innerHTML = bear;
-        setRandomPosition(div);
+        div.innerHTML = e;
+        div.style.left = Math.random() * 100 + 'vw';
+        div.style.animationDelay = Math.random() * 5 + 's';
+        div.style.animationDuration = 10 + Math.random() * 20 + 's';
         container.appendChild(div);
     });
 }
 
-function setRandomPosition(element) {
-    element.style.left = Math.random() * 100 + 'vw';
-    element.style.animationDelay = Math.random() * 5 + 's';
-    element.style.animationDuration = 10 + Math.random() * 20 + 's';
-}
-
-// --- PERBAIKAN UTAMA: Agar tidak kosong dan di tengah ---
-function showNextQuestion(questionNumber) {
-    document.querySelectorAll('.question-section').forEach(q => {
-        q.classList.add('hidden');
-        q.style.display = 'none'; // Pastikan yang lama benar-benar hilang
-    });
-
-    const nextQ = document.getElementById(`question${questionNumber}`);
-    if (nextQ) {
-        nextQ.classList.remove('hidden');
-        // Gunakan flex agar isi di dalamnya otomatis ke tengah
-        nextQ.style.display = 'flex'; 
-        nextQ.style.flexDirection = 'column';
-        nextQ.style.alignItems = 'center';
-        nextQ.style.justifyContent = 'center';
-    }
-}
-
-// Function to move the "No" button
-function moveButton(button) {
-    if (button.id === 'noBtn3') {
-        const yesBtn = document.getElementById('yesBtn3');
-        noScale -= 0.1;
-        if (noScale < 0.3) noScale = 0.3;
-        button.style.transform = `scale(${noScale})`;
-
-        yesScale += 0.4;
-        yesBtn.style.transform = `scale(${yesScale})`;
-        
-        button.style.transition = "all 0.3s ease";
-        yesBtn.style.transition = "all 0.3s ease";
-    }
-
-    // Pindah posisi acak di area tengah layar (aman)
-    const minX = window.innerWidth * 0.2;
-    const maxX = window.innerWidth * 0.8 - button.offsetWidth;
-    const minY = window.innerHeight * 0.2;
-    const maxY = window.innerHeight * 0.8 - button.offsetHeight;
-
-    const x = Math.random() * (maxX - minX) + minX;
-    const y = Math.random() * (maxY - minY) + minY;
-    
-    button.style.position = 'fixed';
-    button.style.left = x + 'px';
-    button.style.top = y + 'px';
-    button.style.zIndex = "1000";
-}
-
-function initLoveMeter() {
-    const loveMeter = document.getElementById('loveMeter');
-    const loveValue = document.getElementById('loveValue');
-    const nextBtn = document.getElementById('nextBtn');
-    const extraLove = document.getElementById('extraLove');
-
-    if (!loveMeter) return;
-
-    loveMeter.value = 0;
-    loveValue.textContent = "0";
-    nextBtn.style.display = 'none';
-
-    loveMeter.addEventListener('input', () => {
-        const value = parseInt(loveMeter.value);
-        const max = parseInt(loveMeter.max);
-
-        if (value < max) {
-            loveValue.textContent = value.toLocaleString();
-            nextBtn.style.display = 'none';
-            extraLove.classList.add('hidden');
-        } else {
-            loveValue.textContent = "∞"; 
-            loveValue.style.color = "#ff4d6d";
-            extraLove.textContent = "Love has exceeded all limits!";
-            extraLove.classList.remove('hidden');
-            nextBtn.style.display = 'block';
-            nextBtn.style.margin = "20px auto"; // Agar tombol di tengah
-        }
-    });
-}
-
-function celebrate() {
-    // 1. Sembunyikan semua section pertanyaan sebelumnya
+// ================= QUESTIONS =================
+function showNextQuestion(n) {
     document.querySelectorAll('.question-section').forEach(q => {
         q.classList.add('hidden');
         q.style.display = 'none';
     });
 
-    // 2. Tampilkan container celebration
-    const celebration = document.getElementById('celebration');
-    celebration.classList.remove('hidden');
-    celebration.style.display = 'flex';
-    celebration.style.flexDirection = 'column';
-    celebration.style.alignItems = 'center';
-    
-    // 3. Isi teks dari config
-    document.getElementById('celebrationTitle').textContent = config.celebration.title;
-    document.getElementById('celebrationMessage').textContent = config.celebration.message;
-    
-    // 4. MENGUBAH EMOJI MENJADI GIF
-    // Kita ganti textContent menjadi innerHTML agar bisa membaca tag <img>
-    const emojiArea = document.getElementById('celebrationEmojis');
-    emojiArea.innerHTML = `
-        <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif" 
-             alt="Happy Valentine GIF" 
-             style="width: 100px; height: 100px; margin-top: 15px; border-radius: 20px;">
-    `;
-    
-    // 5. Jalankan efek hati
-    createHeartExplosion();
-    addProveLoveButton();
+    const next = document.getElementById(`question${n}`);
+    next.classList.remove('hidden');
+    next.style.display = 'flex';
+    next.style.flexDirection = 'column';
+    next.style.alignItems = 'center';
 }
 
-function createHeartExplosion() {
-    for (let i = 0; i < 50; i++) {
-        const heart = document.createElement('div');
-        const randomHeart = config.floatingEmojis.hearts[Math.floor(Math.random() * config.floatingEmojis.hearts.length)];
-        heart.innerHTML = randomHeart;
-        heart.className = 'heart';
-        document.querySelector('.floating-elements').appendChild(heart);
-        setRandomPosition(heart);
+// ================= NO BUTTON =================
+function moveButton(btn) {
+    if (btn.id === 'noBtn3') {
+        const yesBtn = document.getElementById('yesBtn3');
+        noScale = Math.max(0.3, noScale - 0.1);
+        yesScale += 0.4;
+        btn.style.transform = `scale(${noScale})`;
+        yesBtn.style.transform = `scale(${yesScale})`;
     }
+
+    btn.style.position = 'fixed';
+    btn.style.left = Math.random() * 70 + 15 + 'vw';
+    btn.style.top = Math.random() * 60 + 20 + 'vh';
 }
 
-function addProveLoveButton() {
-    const celebration = document.getElementById('celebration');
+// ================= LOVE METER =================
+function initLoveMeter() {
+    const meter = document.getElementById('loveMeter');
+    const value = document.getElementById('loveValue');
+    const nextBtn = document.getElementById('nextBtn');
+    const extra = document.getElementById('extraLove');
 
-    const proveBtn = document.createElement('button');
-    proveBtn.id = 'proveLoveBtn';
-    proveBtn.textContent = 'Are you really love me? 😋';
+    meter.value = 0;
+    value.textContent = '0';
+    nextBtn.style.display = 'none';
 
-    Object.assign(proveBtn.style, {
-        marginTop: '20px',
-        padding: '12px 20px',
-        fontSize: '16px',
-        borderRadius: '12px',
-        border: 'none',
-        cursor: 'pointer',
-        background: '#ff4d6d',
-        color: 'white'
+    meter.addEventListener('input', () => {
+        if (+meter.value < +meter.max) {
+            value.textContent = meter.value;
+            extra.classList.add('hidden');
+            nextBtn.style.display = 'none';
+        } else {
+            value.textContent = '∞';
+            extra.textContent = 'Love has exceeded all limits!';
+            extra.classList.remove('hidden');
+            nextBtn.style.display = 'block';
+        }
     });
-
-    proveBtn.addEventListener('click', startMinesweeper);
-
-    celebration.appendChild(proveBtn);
 }
 
+// ================= CELEBRATION =================
+function celebrate() {
+    document.querySelectorAll('.question-section').forEach(q => q.classList.add('hidden'));
+
+    const c = document.getElementById('celebration');
+    c.classList.remove('hidden');
+    c.innerHTML = `
+        <h2>${config.celebration.title}</h2>
+        <p>${config.celebration.message}</p>
+        <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif"
+             style="width:100px;border-radius:20px;margin:15px 0">
+    `;
+
+    const btn = document.createElement('button');
+    btn.textContent = 'Are you really love me? 😋';
+    btn.className = 'cute-btn';
+    btn.onclick = startMinesweeper;
+    c.appendChild(btn);
+}
+
+// ================= MINESWEEPER =================
 function getCellSize() {
-    const screenWidth = window.innerWidth;
-    const padding = 40; // aman dari pinggir
-    const maxGridWidth = screenWidth - padding;
-    return Math.floor(maxGridWidth / minesweeperSize);
+    return Math.min(Math.floor((window.innerWidth - 40) / minesweeperSize), 60);
 }
-
 
 function startMinesweeper() {
-    document.getElementById('celebration').style.display = 'hidden';
-
+    const celebration = document.getElementById('celebration');
     const game = document.getElementById('minesweeper');
+
+    celebration.classList.add('hidden');
     game.classList.remove('hidden');
     game.innerHTML = '<h2>Prove Your Love 💣❤️</h2>';
 
-    let gameOver = false;
-
-    // 🔥 BUAT BOM HANYA SEKALI
     if (!minesweeperBombs) {
         minesweeperBombs = new Set();
         while (minesweeperBombs.size < minesweeperBombCount) {
-            minesweeperBombs.add(
-                Math.floor(Math.random() * minesweeperSize * minesweeperSize)
-            );
+            minesweeperBombs.add(Math.floor(Math.random() * 25));
         }
     }
 
+    const size = getCellSize();
     const grid = document.createElement('div');
-    const cellSize = Math.min(getCellSize(), 60); // max 60px biar desktop tetap cakep
     grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = `repeat(${minesweeperSize}, ${cellSize}px)`;
-    grid.style.gap = Math.max(4, cellSize * 0.12) + 'px';
-    grid.style.marginTop = '20px';
-    grid.style.justifyContent = 'center';
+    grid.style.gridTemplateColumns = `repeat(5, ${size}px)`;
+    grid.style.gap = '6px';
 
+    let gameOver = false;
 
-    for (let i = 0; i < minesweeperSize * minesweeperSize; i++) {
+    for (let i = 0; i < 25; i++) {
         const cell = document.createElement('button');
-            cell.style.width = cellSize + 'px';
-            cell.style.height = cellSize + 'px';
-            cell.style.fontSize = Math.floor(cellSize * 0.45) + 'px';
-            cell.style.borderRadius = '10px';
-            cell.style.touchAction = 'manipulation'; // penting buat HP
+        cell.style.width = size + 'px';
+        cell.style.height = size + 'px';
+        cell.style.fontSize = size * 0.45 + 'px';
 
-
-        cell.addEventListener('click', () => {
+        cell.onclick = () => {
             if (gameOver || cell.disabled) return;
-
             if (minesweeperBombs.has(i)) {
                 cell.textContent = '💣';
-                cell.style.background = '#ff4d6d';
                 gameOver = true;
-                showGameOver(game, minesweeperBombs, grid);
+                showGameOver(game, grid);
             } else {
                 cell.textContent = '❤️';
                 cell.disabled = true;
             }
-        });
+        };
 
         grid.appendChild(cell);
     }
@@ -283,50 +175,32 @@ function startMinesweeper() {
     game.appendChild(grid);
 }
 
-
-function showGameOver(container, bombs, grid) {
-    // Reveal all bombs
-    bombs.forEach(i => {
-        const cell = grid.children[i];
-        cell.textContent = '💣';
+function showGameOver(container, grid) {
+    [...grid.children].forEach((c, i) => {
+        if (minesweeperBombs.has(i)) c.textContent = '💣';
     });
 
-    const msg = document.createElement('p');
-    msg.textContent = 'Boom 💥 Love is hard, try again!';
-    msg.className = 'game-message'; // optional kalau ada
-
-    const templateBtn = document.getElementById('nextBtn');
-    const tryAgainBtn = templateBtn.cloneNode(true);
-    tryAgainBtn.textContent = 'Try Again';
-    tryAgainBtn.onclick = () => {
-    startMinesweeper(); // 💣 posisi sama
+    const btn = document.createElement('button');
+    btn.textContent = 'Try Again';
+    btn.className = 'cute-btn';
+    btn.onclick = () => {
+        minesweeperBombs = null;
+        startMinesweeper();
     };
-    container.appendChild(msg);
-    container.appendChild(tryAgainBtn);
+
+    container.appendChild(btn);
 }
 
+// ================= MUSIC =================
 function setupMusicPlayer() {
-    const musicControls = document.getElementById('musicControls');
-    const musicToggle = document.getElementById('musicToggle');
-    const bgMusic = document.getElementById('bgMusic');
-    const musicSource = document.getElementById('musicSource');
+    if (!config.music.enabled) return;
 
-    if (!config.music.enabled) {
-        musicControls.style.display = 'none';
-        return;
-    }
+    const toggle = document.getElementById('musicToggle');
+    const music = document.getElementById('bgMusic');
+    document.getElementById('musicSource').src = config.music.musicUrl;
+    music.load();
 
-    musicSource.src = config.music.musicUrl;
-    bgMusic.volume = config.music.volume || 0.5;
-    bgMusic.load();
-
-    musicToggle.addEventListener('click', () => {
-        if (bgMusic.paused) {
-            bgMusic.play();
-            musicToggle.textContent = config.music.stopText;
-        } else {
-            bgMusic.pause();
-            musicToggle.textContent = config.music.startText;
-        }
-    });
+    toggle.onclick = () => {
+        music.paused ? music.play() : music.pause();
+    };
 }
