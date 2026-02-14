@@ -125,25 +125,32 @@ function showNextQuestion(questionNumber) {
 
 // Function to move the "No" button when clicked
 function moveButton(button) {
-    // Logika pindah posisi
-    const x = Math.random() * (window.innerWidth - button.offsetWidth);
-    const y = Math.random() * (window.innerHeight - button.offsetHeight);
-    
-    button.style.position = 'fixed';
-    button.style.left = x + 'px';
-    button.style.top = y + 'px';
-    button.style.zIndex = "1000";
+    // 1. Cek apakah ini tombol "No" di bagian akhir (question 3)
+    if (button.id === 'noBtn3') {
+        const yesBtn = document.getElementById('yesBtn3');
+        
+        // Perkecil tombol No
+        noScale -= 0.1;
+        if (noScale < 0.3) noScale = 0.3; // Batas minimal biar tidak hilang
+        button.style.transform = `scale(${noScale})`;
 
-    // Khusus untuk noBtn3 agar memperbesar tombol Yes
-    if (button.id === 'noBtn3') {
-        const yesBtn = document.getElementById('yesBtn3');
-        noScale -= 0.1;
-        if (noScale < 0.3) noScale = 0.3;
-        button.style.transform = `scale(${noScale})`;
+        // Perbesar tombol Yes
+        yesScale += 0.4; // Menambah 40% setiap klik
+        yesBtn.style.transform = `scale(${yesScale})`;
+        
+        // Tambahkan efek halus
+        button.style.transition = "all 0.3s ease";
+        yesBtn.style.transition = "all 0.3s ease";
+    }
 
-        yesScale += 0.4;
-        yesBtn.style.transform = `scale(${yesScale})`;
-    }
+    // 2. Logika pindah posisi (berlaku untuk semua tombol yang memanggil moveButton)
+    const x = Math.random() * (window.innerWidth - button.offsetWidth);
+    const y = Math.random() * (window.innerHeight - button.offsetHeight);
+    
+    button.style.position = 'fixed';
+    button.style.left = x + 'px';
+    button.style.top = y + 'px';
+    button.style.zIndex = "1000"; // Pastikan tombol selalu di atas elemen lain
 }
 
 const loveMeter = document.getElementById('loveMeter');
