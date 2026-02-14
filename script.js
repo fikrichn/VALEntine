@@ -221,41 +221,43 @@ function createHeartExplosion() {
 }
 
 // Music Player Setup
+
 function setupMusicPlayer() {
-    const bgMusic = document.getElementById('bgMusic');
+    const musicControls = document.getElementById('musicControls');
     const musicToggle = document.getElementById('musicToggle');
+    const bgMusic = document.getElementById('bgMusic');
     const musicSource = document.getElementById('musicSource');
 
-    if (!config.music.enabled) return;
+    // Only show controls if music is enabled in config
+    if (!config.music.enabled) {
+        musicControls.style.display = 'none';
+        return;
+    }
 
-    // Setup
+    // Set music source and volume
     musicSource.src = config.music.musicUrl;
     bgMusic.volume = config.music.volume || 0.5;
-    bgMusic.loop = true;
     bgMusic.load();
 
-    // Try autoplay immediately
-    bgMusic.play().then(() => {
-        // ✅ Autoplay with sound succeeded
-        musicToggle.textContent = config.music.stopText;
-    }).catch(() => {
-        // ❌ Autoplay blocked → wait for user interaction
-        const startOnInteraction = () => {
+    // Try autoplay if enabled
+    if (config.music.autoplay) {
+        const playPromise = bgMusic.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay prevented by browser");
+                musicToggle.textContent = config.music.startText;
+            });
+        }
+    }
+
+    // Toggle music on button click
+    musicToggle.addEventListener('click', () => {
+        if (bgMusic.paused) {
             bgMusic.play();
             musicToggle.textContent = config.music.stopText;
-            window.removeEventListener('click', startOnInteraction);
-            window.removeEventListener('touchstart', startOnInteraction);
-        };
-
-        window.addEventListener('click', startOnInteraction);
-        window.addEventListener('touchstart', startOnInteraction);
+        } else {
+            bgMusic.pause();
+            musicToggle.textContent = config.music.startText;
+        }
     });
-
-    // STOP button (default meaning)
-    musicToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        bgMusic.pause();
-        musicToggle.textContent = config.music.startText;
-    });
-}
-
+} 
