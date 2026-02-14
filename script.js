@@ -125,32 +125,41 @@ function showNextQuestion(questionNumber) {
 
 // Function to move the "No" button when clicked
 function moveButton(button) {
-    // 1. Cek apakah ini tombol "No" di bagian akhir (question 3)
     if (button.id === 'noBtn3') {
         const yesBtn = document.getElementById('yesBtn3');
+        const gifContainer = document.getElementById('gifContainer');
+        const noGif = document.getElementById('noGif');
+
+        // Show the GIF container
+        gifContainer.classList.remove('hidden');
         
-        // Perkecil tombol No
+        // Change the GIF URL (You can add this to your VALENTINE_CONFIG)
+        // Or hardcode it: noGif.src = "https://media.giphy.com/media/.../giphy.gif";
+        if (config.gifs && config.gifs.sad) {
+            noGif.src = config.gifs.sad;
+        }
+
+        // Shrink No button
         noScale -= 0.1;
-        if (noScale < 0.3) noScale = 0.3; // Batas minimal biar tidak hilang
+        if (noScale < 0.3) noScale = 0.3; 
         button.style.transform = `scale(${noScale})`;
 
-        // Perbesar tombol Yes
-        yesScale += 0.4; // Menambah 40% setiap klik
+        // Grow Yes button
+        yesScale += 0.4; 
         yesBtn.style.transform = `scale(${yesScale})`;
         
-        // Tambahkan efek halus
         button.style.transition = "all 0.3s ease";
         yesBtn.style.transition = "all 0.3s ease";
     }
 
-    // 2. Logika pindah posisi (berlaku untuk semua tombol yang memanggil moveButton)
+    // Logic for jumping position
     const x = Math.random() * (window.innerWidth - button.offsetWidth);
     const y = Math.random() * (window.innerHeight - button.offsetHeight);
     
     button.style.position = 'fixed';
     button.style.left = x + 'px';
     button.style.top = y + 'px';
-    button.style.zIndex = "1000"; // Pastikan tombol selalu di atas elemen lain
+    button.style.zIndex = "1000";
 }
 
 const loveMeter = document.getElementById('loveMeter');
