@@ -222,35 +222,41 @@ function createHeartExplosion() {
 
 // Music Player Setup
 function setupMusicPlayer() {
-    const musicControls = document.getElementById('musicControls');
-    const musicToggle = document.getElementById('musicToggle');
     const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
     const musicSource = document.getElementById('musicSource');
 
-    // Only show controls if music is enabled in config
-    if (!config.music.enabled) {
-        musicControls.style.display = 'none';
-        return;
-    }
+    if (!config.music.enabled) return;
 
-    // Set music source and volume
+    // 1. Setup Source and Volume
     musicSource.src = config.music.musicUrl;
     bgMusic.volume = config.music.volume || 0.5;
+    bgMusic.loop = true; // Ensure it keeps playing
     bgMusic.load();
 
-    // Try autoplay if enabled
-    if (config.music.autoplay) {
-        const playPromise = bgMusic.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log("Autoplay prevented by browser");
-                musicToggle.textContent = config.music.startText;
-            });
-        }
-    }
+    // 2. The Autoplay Function
+    const startMusic = () => {
+        bgMusic.play().then(() => {
+            // Success! Music is playing
+            musicToggle.textContent = config.music.stopText;
+            // Remove listeners so we don't keep trying to play
+            window.removeEventListener('click', startMusic);
+            window.removeEventListener('touchstart', startMusic);
+        }).catch(error => {
+            console.log("Waiting for user interaction to play music...");
+        });
+    };
 
-    // Toggle music on button click
-    musicToggle.addEventListener('click', () => {
+    // 3. Try to play immediately (might be blocked)
+    startMusic();
+
+    // 4. Fail-safe: Start music on the first click/touch anywhere
+    window.addEventListener('click', startMusic);
+    window.addEventListener('touchstart', startMusic);
+
+    // 5. Manual Toggle Button
+    musicToggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent the window listener from firing
         if (bgMusic.paused) {
             bgMusic.play();
             musicToggle.textContent = config.music.stopText;
@@ -259,4 +265,4 @@ function setupMusicPlayer() {
             musicToggle.textContent = config.music.startText;
         }
     });
-} 
+}
