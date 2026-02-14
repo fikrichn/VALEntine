@@ -126,25 +126,20 @@ function showNextQuestion(questionNumber) {
 // Function to move the "No" button when clicked
 function moveButton(button) {
     if (button.id === 'noBtn3') {
-        const yesBtn = document.getElementById('yesBtn3');
+        // --- NEW CODE STARTS HERE ---
         const gifContainer = document.getElementById('gifContainer');
-        const noGif = document.getElementById('noGif');
-
-        // Show the GIF container
-        gifContainer.classList.remove('hidden');
+        const sadGif = document.getElementById('sadGif');
         
-        // Change the GIF URL (You can add this to your VALENTINE_CONFIG)
-        // Or hardcode it: noGif.src = "https://media.giphy.com/media/.../giphy.gif";
-        if (config.gifs && config.gifs.sad) {
-            noGif.src = config.gifs.sad;
-        }
+        gifContainer.style.display = 'block'; // Make the container visible
+        sadGif.src = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJueHByZ3R6bm9pZnd6amZ3eXp3eXp3Znd6amZ3eXp3eXp3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/OPU6wUKARAtaU/giphy.gif"; // Put your GIF link here!
+        // --- NEW CODE ENDS HERE ---
 
-        // Shrink No button
+        const yesBtn = document.getElementById('yesBtn3');
+        
         noScale -= 0.1;
         if (noScale < 0.3) noScale = 0.3; 
         button.style.transform = `scale(${noScale})`;
 
-        // Grow Yes button
         yesScale += 0.4; 
         yesBtn.style.transform = `scale(${yesScale})`;
         
@@ -152,7 +147,6 @@ function moveButton(button) {
         yesBtn.style.transition = "all 0.3s ease";
     }
 
-    // Logic for jumping position
     const x = Math.random() * (window.innerWidth - button.offsetWidth);
     const y = Math.random() * (window.innerHeight - button.offsetHeight);
     
@@ -160,18 +154,6 @@ function moveButton(button) {
     button.style.left = x + 'px';
     button.style.top = y + 'px';
     button.style.zIndex = "1000";
-}
-
-const loveMeter = document.getElementById('loveMeter');
-const loveValue = document.getElementById('loveValue');
-const extraLove = document.getElementById('extraLove');
-const nextBtn = document.getElementById('nextBtn');
-
-function initLoveMeter() {
-    loveMeter.value = 0;
-    loveValue.textContent = "0";
-    nextBtn.style.display = 'none';
-    extraLove.classList.add('hidden');
 }
 
 window.addEventListener('DOMContentLoaded', initLoveMeter);
