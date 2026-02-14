@@ -160,7 +160,7 @@ const nextBtn = document.getElementById('nextBtn');
 
 function initLoveMeter() {
     loveMeter.value = 0;
-    loveValue.textContent = "0%";
+    loveValue.textContent = "0";
     nextBtn.style.display = 'none';
     extraLove.classList.add('hidden');
 }
@@ -178,7 +178,7 @@ loveMeter.addEventListener('input', () => {
         extraLove.classList.add('hidden');
     } else {
         // The "Break the Limit" moment
-        loveValue.textContent = "∞%"; 
+        loveValue.textContent = "∞"; 
         loveValue.style.color = "#ff4d6d"; // Optional: change color for flair
         extraLove.textContent = "Love has exceeded all limits!";
         extraLove.classList.remove('hidden');
@@ -232,33 +232,30 @@ function setupMusicPlayer() {
     musicSource.src = config.music.musicUrl;
     bgMusic.volume = config.music.volume || 0.5;
     bgMusic.loop = true;
-    bgMusic.muted = true; // 🔑 KEY PART
     bgMusic.load();
 
-    // Autoplay (allowed because muted)
+    // Try autoplay immediately
     bgMusic.play().then(() => {
+        // ✅ Autoplay with sound succeeded
         musicToggle.textContent = config.music.stopText;
-    });
-
-    // First user interaction → unmute
-    const enableSound = () => {
-        bgMusic.muted = false;
-        window.removeEventListener('click', enableSound);
-        window.removeEventListener('touchstart', enableSound);
-    };
-
-    window.addEventListener('click', enableSound);
-    window.addEventListener('touchstart', enableSound);
-
-    // Manual toggle
-    musicToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (bgMusic.paused) {
+    }).catch(() => {
+        // ❌ Autoplay blocked → wait for user interaction
+        const startOnInteraction = () => {
             bgMusic.play();
             musicToggle.textContent = config.music.stopText;
-        } else {
-            bgMusic.pause();
-            musicToggle.textContent = config.music.startText;
-        }
+            window.removeEventListener('click', startOnInteraction);
+            window.removeEventListener('touchstart', startOnInteraction);
+        };
+
+        window.addEventListener('click', startOnInteraction);
+        window.addEventListener('touchstart', startOnInteraction);
+    });
+
+    // STOP button (default meaning)
+    musicToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        bgMusic.pause();
+        musicToggle.textContent = config.music.startText;
     });
 }
+
