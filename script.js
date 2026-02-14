@@ -164,31 +164,48 @@ function setInitialPosition() {
     loveMeter.style.width = '100%';
 }
 
+// At the top of your script, ensure the Next button starts hidden or disabled
+window.addEventListener('DOMContentLoaded', () => {
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.style.display = 'none'; // Hide next button initially
+});
+
 loveMeter.addEventListener('input', () => {
-    const value = parseInt(loveMeter.value);
+    let value = parseInt(loveMeter.value);
+    const nextBtn = document.getElementById('nextBtn');
+    
+    // --- THE "HARD MODE" LOGIC ---
+    // Even if they slide to the end, we can artificially cap the display value
+    // or make the slider require more effort to reach high numbers.
+    if (value > 100) {
+        // This makes the value climb much slower than the actual slider movement
+        // It feels like the slider is "heavy"
+        value = 100 + Math.floor((value - 100) / 50); 
+    }
+    
     loveValue.textContent = value;
     
     if (value > 100) {
+        // Break the limit!
         extraLove.classList.remove('hidden');
-        const overflowPercentage = (value - 100) / 9900;
-        const extraWidth = overflowPercentage * window.innerWidth * 0.8;
-        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
-        loveMeter.style.transition = 'width 0.3s';
+        nextBtn.style.display = 'block'; // Reveal the button only after 100%
         
-        // Show different messages based on the value
-        if (value >= 5000) {
+        // Visual feedback: the slider physically grows
+        const overflowPercentage = (value - 100) / 100;
+        const extraWidth = overflowPercentage * 50; // Grows slightly
+        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
+        
+        // Logic for messages based on your config
+        if (value >= 200) { // Much harder to reach now
             extraLove.classList.add('super-love');
             extraLove.textContent = config.loveMessages.extreme;
-        } else if (value > 1000) {
-            extraLove.classList.remove('super-love');
-            extraLove.textContent = config.loveMessages.high;
         } else {
             extraLove.classList.remove('super-love');
-            extraLove.textContent = config.loveMessages.normal;
+            extraLove.textContent = config.loveMessages.high;
         }
     } else {
         extraLove.classList.add('hidden');
-        extraLove.classList.remove('super-love');
+        nextBtn.style.display = 'none'; // Keep hidden if they slide back down
         loveMeter.style.width = '100%';
     }
 });
