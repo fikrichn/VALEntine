@@ -170,10 +170,6 @@ window.addEventListener('DOMContentLoaded', () => {
     nextBtn.style.display = 'none'; // Hide next button initially
 });
 
-// Initialize the slider at 0
-loveMeter.value = 0;
-loveValue.textContent = 0;
-
 // At the top of your script, ensure the Next button starts hidden or disabled
 window.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('nextBtn');
@@ -181,42 +177,60 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 loveMeter.addEventListener('input', () => {
-    let value = parseInt(loveMeter.value);
+    // 1. Get the raw value from the slider (e.g., 0 to 10000)
+    const rawValue = parseInt(loveMeter.value);
     const nextBtn = document.getElementById('nextBtn');
     
-    // --- THE "HARD MODE" LOGIC ---
-    // Even if they slide to the end, we can artificially cap the display value
-    // or make the slider require more effort to reach high numbers.
-    if (value > 100) {
-        // This makes the value climb much slower than the actual slider movement
-        // It feels like the slider is "heavy"
-        value = 100 + Math.floor((value - 100) / 50); 
+    // 2. Calculate the Display Value
+    // We want it to look like 0-100 normally, then skyrocket
+    let displayValue;
+    if (rawValue <= 100) {
+        displayValue = rawValue;
+    } else {
+        // Once past 100, the number grows exponentially
+        // (rawValue - 100) squared makes it hit millions very fast
+        displayValue = 100 + Math.pow((rawValue - 100), 2);
+    }
+
+    // 3. Update the UI Text
+    if (rawValue >= (loveMeter.max * 0.95)) {
+        loveValue.textContent = "∞"; // Infinity at the very end
+    } else {
+        loveValue.textContent = Math.floor(displayValue).toLocaleString();
     }
     
-    loveValue.textContent = value;
-    
-    if (value > 100) {
-        // Break the limit!
+    // 4. Handle the "Break the Limit" effects
+    if (rawValue > 100) {
         extraLove.classList.remove('hidden');
-        nextBtn.style.display = 'block'; // Reveal the button only after 100%
         
-        // Visual feedback: the slider physically grows
-        const overflowPercentage = (value - 100) / 100;
-        const extraWidth = overflowPercentage * 50; // Grows slightly
+        // Show the Next button only after they "break" 100
+        if (nextBtn) nextBtn.style.display = 'block';
+
+        // Calculate physical stretching of the slider
+        // This makes the bar actually grow wider than the screen
+        const overflowPercentage = (rawValue - 100) / (loveMeter.max - 100);
+        const extraWidth = overflowPercentage * window.innerWidth * 1.5; 
+        
         loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
+        loveMeter.style.transition = 'width 0.1s ease-out'; // Snappier for "pulling" feel
         
-        // Logic for messages based on your config
-        if (value >= 200) { // Much harder to reach now
+        // Messages based on the calculated displayValue
+        if (displayValue >= 1000000) {
             extraLove.classList.add('super-love');
             extraLove.textContent = config.loveMessages.extreme;
-        } else {
+        } else if (displayValue > 1000) {
             extraLove.classList.remove('super-love');
             extraLove.textContent = config.loveMessages.high;
+        } else {
+            extraLove.classList.remove('super-love');
+            extraLove.textContent = config.loveMessages.normal;
         }
     } else {
+        // Reset state when under 100
         extraLove.classList.add('hidden');
-        nextBtn.style.display = 'none'; // Keep hidden if they slide back down
+        extraLove.classList.remove('super-love');
         loveMeter.style.width = '100%';
+        if (nextBtn) nextBtn.style.display = 'none';
     }
 });
 
