@@ -1,205 +1,281 @@
-// ================= CONFIG =================
+// Initialize configuration
 const config = window.VALENTINE_CONFIG;
 
 let noScale = 1;
 let yesScale = 1;
 
 let minesweeperBombs = null;
-const minesweeperSize = 5;
-const minesweeperBombCount = 5;
+let minesweeperSize = 5;
+let minesweeperBombCount = 5;
 
-// ================= INIT =================
+
+// Validate configuration
+function validateConfig() {
+    const warnings = [];
+    if (!config.valentineName) {
+        config.valentineName = "My love";
+    }
+}
+
+// Set page title
 document.title = config.pageTitle;
 
+// Initialize the page content when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
-    if (!config.valentineName) config.valentineName = "My love";
+    validateConfig();
 
-    document.getElementById('valentineTitle').textContent =
-        `${config.valentineName}, in 2000 years`;
-
-    // Question 1
-    questionText('question1', config.questions.first);
-    // Question 2
-    questionText('question2', config.questions.second);
-    // Question 3
-    questionText('question3', config.questions.third);
+    // Set texts from config
+    document.getElementById('valentineTitle').textContent = `${config.valentineName}, in 2000 years`;
+    
+    // Set first question texts
+    document.getElementById('question1Text').textContent = config.questions.first.text;
+    document.getElementById('yesBtn1').textContent = config.questions.first.yesBtn;
+    document.getElementById('noBtn1').textContent = config.questions.first.noBtn;
+    document.getElementById('secretAnswerBtn').textContent = config.questions.first.secretAnswer;
+    
+    // Set second question texts
+    document.getElementById('question2Text').textContent = config.questions.second.text;
+    document.getElementById('startText').textContent = config.questions.second.startText;
+    document.getElementById('nextBtn').textContent = config.questions.second.nextBtn;
+    
+    // Set third question texts
+    document.getElementById('question3Text').textContent = config.questions.third.text;
+    document.getElementById('yesBtn3').textContent = config.questions.third.yesBtn;
+    document.getElementById('noBtn3').textContent = config.questions.third.noBtn;
 
     createFloatingElements();
     setupMusicPlayer();
     initLoveMeter();
 });
 
-// ================= HELPERS =================
-function questionText(id, data) {
-    const q = document.getElementById(id);
-    if (!q) return;
+// Create floating hearts and bears
+function createFloatingElements() {
+    const container = document.querySelector('.floating-elements');
+    config.floatingEmojis.hearts.forEach(heart => {
+        const div = document.createElement('div');
+        div.className = 'heart';
+        div.innerHTML = heart;
+        setRandomPosition(div);
+        container.appendChild(div);
+    });
+    config.floatingEmojis.bears.forEach(bear => {
+        const div = document.createElement('div');
+        div.className = 'bear';
+        div.innerHTML = bear;
+        setRandomPosition(div);
+        container.appendChild(div);
+    });
+}
 
-    q.querySelector('h2').textContent = data.text;
+function setRandomPosition(element) {
+    element.style.left = Math.random() * 100 + 'vw';
+    element.style.animationDelay = Math.random() * 5 + 's';
+    element.style.animationDuration = 10 + Math.random() * 20 + 's';
+}
 
-    if (data.yesBtn) {
-        const yes = q.querySelector('.cute-btn[id^="yes"]');
-        if (yes) yes.textContent = data.yesBtn;
-    }
+// --- PERBAIKAN UTAMA: Agar tidak kosong dan di tengah ---
+function showNextQuestion(questionNumber) {
+    document.querySelectorAll('.question-section').forEach(q => {
+        q.classList.add('hidden');
+        q.style.display = 'none'; // Pastikan yang lama benar-benar hilang
+    });
 
-    if (data.noBtn) {
-        const no = q.querySelector('.cute-btn[id^="no"]');
-        if (no) no.textContent = data.noBtn;
-    }
-
-    if (data.nextBtn) {
-        const next = q.querySelector('#nextBtn');
-        if (next) next.textContent = data.nextBtn;
+    const nextQ = document.getElementById(`question${questionNumber}`);
+    if (nextQ) {
+        nextQ.classList.remove('hidden');
+        // Gunakan flex agar isi di dalamnya otomatis ke tengah
+        nextQ.style.display = 'flex'; 
+        nextQ.style.flexDirection = 'column';
+        nextQ.style.alignItems = 'center';
+        nextQ.style.justifyContent = 'center';
     }
 }
 
-// ================= FLOW =================
-function showNextQuestion(num) {
+// Function to move the "No" button
+function moveButton(button) {
+    if (button.id === 'noBtn3') {
+        const yesBtn = document.getElementById('yesBtn3');
+        noScale -= 0.1;
+        if (noScale < 0.3) noScale = 0.3;
+        button.style.transform = `scale(${noScale})`;
+
+        yesScale += 0.4;
+        yesBtn.style.transform = `scale(${yesScale})`;
+        
+        button.style.transition = "all 0.3s ease";
+        yesBtn.style.transition = "all 0.3s ease";
+    }
+
+    // Pindah posisi acak di area tengah layar (aman)
+    const minX = window.innerWidth * 0.2;
+    const maxX = window.innerWidth * 0.8 - button.offsetWidth;
+    const minY = window.innerHeight * 0.2;
+    const maxY = window.innerHeight * 0.8 - button.offsetHeight;
+
+    const x = Math.random() * (maxX - minX) + minX;
+    const y = Math.random() * (maxY - minY) + minY;
+    
+    button.style.position = 'fixed';
+    button.style.left = x + 'px';
+    button.style.top = y + 'px';
+    button.style.zIndex = "1000";
+}
+
+function initLoveMeter() {
+    const loveMeter = document.getElementById('loveMeter');
+    const loveValue = document.getElementById('loveValue');
+    const nextBtn = document.getElementById('nextBtn');
+    const extraLove = document.getElementById('extraLove');
+
+    if (!loveMeter) return;
+
+    loveMeter.value = 0;
+    loveValue.textContent = "0";
+    nextBtn.style.display = 'none';
+
+    loveMeter.addEventListener('input', () => {
+        const value = parseInt(loveMeter.value);
+        const max = parseInt(loveMeter.max);
+
+        if (value < max) {
+            loveValue.textContent = value.toLocaleString();
+            nextBtn.style.display = 'none';
+            extraLove.classList.add('hidden');
+        } else {
+            loveValue.textContent = "∞"; 
+            loveValue.style.color = "#ff4d6d";
+            extraLove.textContent = "Love has exceeded all limits!";
+            extraLove.classList.remove('hidden');
+            nextBtn.style.display = 'block';
+            nextBtn.style.margin = "20px auto"; // Agar tombol di tengah
+        }
+    });
+}
+
+function celebrate() {
+    // 1. Sembunyikan semua section pertanyaan sebelumnya
     document.querySelectorAll('.question-section').forEach(q => {
         q.classList.add('hidden');
         q.style.display = 'none';
     });
 
-    const next = document.getElementById(`question${num}`);
-    if (!next) return;
-
-    next.classList.remove('hidden');
-    next.style.display = 'flex';
-    next.style.flexDirection = 'column';
-    next.style.alignItems = 'center';
-}
-
-// ================= BUTTON EVASIVE =================
-function moveButton(btn) {
-    if (btn.id === 'noBtn3') {
-        const yes = document.getElementById('yesBtn3');
-        noScale = Math.max(0.3, noScale - 0.1);
-        yesScale += 0.4;
-
-        btn.style.transform = `scale(${noScale})`;
-        yes.style.transform = `scale(${yesScale})`;
-    }
-
-    const x = Math.random() * (window.innerWidth * 0.6) + window.innerWidth * 0.2;
-    const y = Math.random() * (window.innerHeight * 0.5) + window.innerHeight * 0.2;
-
-    btn.style.position = 'fixed';
-    btn.style.left = x + 'px';
-    btn.style.top = y + 'px';
-}
-
-// ================= LOVE METER =================
-function initLoveMeter() {
-    const meter = document.getElementById('loveMeter');
-    if (!meter) return;
-
-    // 🔥 ambil parent question aktif
-    const question = meter.closest('.question-section');
-
-    const value = question.querySelector('#loveValue');
-    const nextBtn = question.querySelector('#nextBtn');
-    const extra = question.querySelector('#extraLove');
-
-    meter.value = 0;
-    nextBtn.style.display = 'none';
-
-    meter.addEventListener('input', () => {
-        if (+meter.value < +meter.max) {
-            value.textContent = meter.value;
-            extra.classList.add('hidden');
-            nextBtn.style.display = 'none';
-        } else {
-            value.textContent = "∞";
-            extra.textContent = "Love beyond limits ❤️";
-            extra.classList.remove('hidden');
-            nextBtn.style.display = 'block';
-        }
-    });
-}
-
-// ================= CELEBRATION =================
-function celebrate() {
-    document.querySelectorAll('.question-section').forEach(q => {
-        q.style.display = 'none';
-    });
-
-    const c = document.getElementById('celebration');
-    c.classList.remove('hidden');
-    c.style.display = 'flex';
-    c.style.flexDirection = 'column';
-    c.style.alignItems = 'center';
-
-    document.getElementById('celebrationTitle').textContent =
-        config.celebration.title;
-    document.getElementById('celebrationMessage').textContent =
-        config.celebration.message;
-
-    document.getElementById('celebrationEmojis').innerHTML = `
-        <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif"
-             style="width:100px;border-radius:16px;margin-top:10px;">
+    // 2. Tampilkan container celebration
+    const celebration = document.getElementById('celebration');
+    celebration.classList.remove('hidden');
+    celebration.style.display = 'flex';
+    celebration.style.flexDirection = 'column';
+    celebration.style.alignItems = 'center';
+    
+    // 3. Isi teks dari config
+    document.getElementById('celebrationTitle').textContent = config.celebration.title;
+    document.getElementById('celebrationMessage').textContent = config.celebration.message;
+    
+    // 4. MENGUBAH EMOJI MENJADI GIF
+    // Kita ganti textContent menjadi innerHTML agar bisa membaca tag <img>
+    const emojiArea = document.getElementById('celebrationEmojis');
+    emojiArea.innerHTML = `
+        <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif" 
+             alt="Happy Valentine GIF" 
+             style="width: 100px; height: 100px; margin-top: 15px; border-radius: 20px;">
     `;
-
+    
+    // 5. Jalankan efek hati
+    createHeartExplosion();
     addProveLoveButton();
 }
 
-// ================= PROVE LOVE BUTTON =================
-function addProveLoveButton() {
-    const c = document.getElementById('celebration');
-
-    const btn = document.createElement('button');
-    btn.textContent = 'Are you really love me? 😋';
-    btn.className = 'cute-btn';
-
-    btn.onclick = () => {
-        c.style.display = 'none';
-        startMinesweeper();
-    };
-
-    c.appendChild(btn);
+function createHeartExplosion() {
+    for (let i = 0; i < 50; i++) {
+        const heart = document.createElement('div');
+        const randomHeart = config.floatingEmojis.hearts[Math.floor(Math.random() * config.floatingEmojis.hearts.length)];
+        heart.innerHTML = randomHeart;
+        heart.className = 'heart';
+        document.querySelector('.floating-elements').appendChild(heart);
+        setRandomPosition(heart);
+    }
 }
 
-// ================= MINESWEEPER =================
+function addProveLoveButton() {
+    const celebration = document.getElementById('celebration');
+
+    const proveBtn = document.createElement('button');
+    proveBtn.id = 'proveLoveBtn';
+    proveBtn.textContent = 'Are you really love me? 😋';
+
+    Object.assign(proveBtn.style, {
+        marginTop: '20px',
+        padding: '12px 20px',
+        fontSize: '16px',
+        borderRadius: '12px',
+        border: 'none',
+        cursor: 'pointer',
+        background: '#ff4d6d',
+        color: 'white'
+    });
+
+    proveBtn.addEventListener('click', startMinesweeper);
+
+    celebration.appendChild(proveBtn);
+}
+
+function getCellSize() {
+    const screenWidth = window.innerWidth;
+    const padding = 40; // aman dari pinggir
+    const maxGridWidth = screenWidth - padding;
+    return Math.floor(maxGridWidth / minesweeperSize);
+}
+
+
 function startMinesweeper() {
+    document.getElementById('celebration').style.display = 'none';
+
     const game = document.getElementById('minesweeper');
     game.classList.remove('hidden');
-    game.innerHTML = `<h2>Prove Your Love 💣❤️</h2>`;
+    game.innerHTML = '<h2>Prove Your Love 💣❤️</h2>';
 
     let gameOver = false;
 
+    // 🔥 BUAT BOM HANYA SEKALI
     if (!minesweeperBombs) {
         minesweeperBombs = new Set();
         while (minesweeperBombs.size < minesweeperBombCount) {
             minesweeperBombs.add(
-                Math.floor(Math.random() * minesweeperSize ** 2)
+                Math.floor(Math.random() * minesweeperSize * minesweeperSize)
             );
         }
     }
 
     const grid = document.createElement('div');
+    const cellSize = Math.min(getCellSize(), 60); // max 60px biar desktop tetap cakep
     grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = `repeat(${minesweeperSize}, 60px)`;
-    grid.style.gap = '8px';
+    grid.style.gridTemplateColumns = `repeat(${minesweeperSize}, ${cellSize}px)`;
+    grid.style.gap = Math.max(4, cellSize * 0.12) + 'px';
     grid.style.marginTop = '20px';
+    grid.style.justifyContent = 'center';
 
-    for (let i = 0; i < minesweeperSize ** 2; i++) {
+
+    for (let i = 0; i < minesweeperSize * minesweeperSize; i++) {
         const cell = document.createElement('button');
-        cell.style.width = '60px';
-        cell.style.height = '60px';
-        cell.style.fontSize = '26px';
-        cell.style.borderRadius = '12px';
+            cell.style.width = cellSize + 'px';
+            cell.style.height = cellSize + 'px';
+            cell.style.fontSize = Math.floor(cellSize * 0.45) + 'px';
+            cell.style.borderRadius = '10px';
+            cell.style.touchAction = 'manipulation'; // penting buat HP
 
-        cell.onclick = () => {
+
+        cell.addEventListener('click', () => {
             if (gameOver || cell.disabled) return;
 
             if (minesweeperBombs.has(i)) {
                 cell.textContent = '💣';
+                cell.style.background = '#ff4d6d';
                 gameOver = true;
-                revealBombs(grid);
-                game.appendChild(gameOverUI());
+                showGameOver(game, minesweeperBombs, grid);
             } else {
                 cell.textContent = '❤️';
                 cell.disabled = true;
             }
-        };
+        });
 
         grid.appendChild(cell);
     }
@@ -207,59 +283,55 @@ function startMinesweeper() {
     game.appendChild(grid);
 }
 
-function revealBombs(grid) {
-    minesweeperBombs.forEach(i => {
-        grid.children[i].textContent = '💣';
+
+function showGameOver(container, bombs, grid) {
+    // Reveal all bombs
+    bombs.forEach(i => {
+        const cell = grid.children[i];
+        cell.textContent = '💣';
     });
-}
 
-function gameOverUI() {
-    const wrap = document.createElement('div');
-    wrap.innerHTML = `<p>Boom 💥 Try again!</p>`;
+    const msg = document.createElement('p');
+    msg.textContent = 'Boom 💥 Love is hard, try again!';
+    msg.className = 'game-message'; // optional kalau ada
 
-    const retry = document.createElement('button');
-    retry.textContent = 'Try Again';
-    retry.className = 'cute-btn';
-
-    retry.onclick = () => startMinesweeper();
-
-    wrap.appendChild(retry);
-    return wrap;
-}
-
-// ================= MUSIC =================
-function setupMusicPlayer() {
-    const toggle = document.getElementById('musicToggle');
-    const music = document.getElementById('bgMusic');
-    const source = document.getElementById('musicSource');
-
-    if (!config.music.enabled) return;
-
-    source.src = config.music.musicUrl;
-    music.volume = config.music.volume || 0.5;
-    music.load();
-
-    toggle.onclick = () => {
-        if (music.paused) {
-            music.play();
-            toggle.textContent = config.music.stopText;
-        } else {
-            music.pause();
-            toggle.textContent = config.music.startText;
-        }
+    const templateBtn = document.getElementById('nextBtn');
+    const tryAgainBtn = templateBtn.cloneNode(true);
+    tryAgainBtn.textContent = 'Try Again';
+    tryAgainBtn.onclick = () => {
+    startMinesweeper(); // 💣 posisi sama
     };
+    container.appendChild(tryAgainBtn);
+    tryAgainBtn.addEventListener('click', () => {
+        startMinesweeper();
+    });
+
+    container.appendChild(msg);
+    container.appendChild(tryAgainBtn);
 }
 
-// ================= FLOATING =================
-function createFloatingElements() {
-    const c = document.querySelector('.floating-elements');
-    [...config.floatingEmojis.hearts, ...config.floatingEmojis.bears]
-        .forEach(e => {
-            const d = document.createElement('div');
-            d.innerHTML = e;
-            d.className = 'heart';
-            d.style.left = Math.random() * 100 + 'vw';
-            d.style.animationDuration = 10 + Math.random() * 20 + 's';
-            c.appendChild(d);
-        });
+function setupMusicPlayer() {
+    const musicControls = document.getElementById('musicControls');
+    const musicToggle = document.getElementById('musicToggle');
+    const bgMusic = document.getElementById('bgMusic');
+    const musicSource = document.getElementById('musicSource');
+
+    if (!config.music.enabled) {
+        musicControls.style.display = 'none';
+        return;
+    }
+
+    musicSource.src = config.music.musicUrl;
+    bgMusic.volume = config.music.volume || 0.5;
+    bgMusic.load();
+
+    musicToggle.addEventListener('click', () => {
+        if (bgMusic.paused) {
+            bgMusic.play();
+            musicToggle.textContent = config.music.stopText;
+        } else {
+            bgMusic.pause();
+            musicToggle.textContent = config.music.startText;
+        }
+    });
 }
