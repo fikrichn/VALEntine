@@ -173,7 +173,7 @@ loveMeter.addEventListener('input', () => {
 
     if (value < max) {
         // Normal behavior: Show the percentage
-        loveValue.textContent = value.toLocaleString() + "%";
+        loveValue.textContent = value.toLocaleString();
         nextBtn.style.display = 'none';
         extraLove.classList.add('hidden');
     } else {
