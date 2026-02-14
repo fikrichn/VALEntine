@@ -171,45 +171,46 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 loveMeter.addEventListener('input', () => {
-    let value = parseInt(loveMeter.value);
+    const rawValue = parseInt(loveMeter.value);
     const nextBtn = document.getElementById('nextBtn');
     
-    // --- THE "HARD MODE" LOGIC ---
-    // Even if they slide to the end, we can artificially cap the display value
-    // or make the slider require more effort to reach high numbers.
-    if (value > 100) {
-        // This makes the value climb much slower than the actual slider movement
-        // It feels like the slider is "heavy"
-        value = 100 + Math.floor((value - 100) / 50); 
-    }
-    
-    loveValue.textContent = value;
-    
-    if (value > 100) {
-        // Break the limit!
-        extraLove.classList.remove('hidden');
-        nextBtn.style.display = 'block'; // Reveal the button only after 100%
-        
-        // Visual feedback: the slider physically grows
-        const overflowPercentage = (value - 100) / 100;
-        const extraWidth = overflowPercentage * 50; // Grows slightly
-        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
-        
-        // Logic for messages based on your config
-        if (value >= 200) { // Much harder to reach now
-            extraLove.classList.add('super-love');
-            extraLove.textContent = config.loveMessages.extreme;
-        } else {
-            extraLove.classList.remove('super-love');
-            extraLove.textContent = config.loveMessages.high;
-        }
+    // 1. Calculate a "Struggle Value"
+    // From 0-100, it's normal. 
+    // Past 100, we use an exponential curve to make it reach "Infinity"
+    let displayValue;
+    if (rawValue <= 100) {
+        displayValue = rawValue;
     } else {
+        // The higher the rawValue, the faster it grows towards infinity
+        // Math.pow makes the gap between numbers feel massive
+        displayValue = 100 + Math.floor(Math.pow((rawValue - 100), 1.5));
+    }
+
+    // Update text
+    if (displayValue >= 1000000) {
+        loveValue.textContent = "∞"; // Show infinity symbol
+        extraLove.textContent = "LOVE OVERFLOW: INFINITY REACHED";
+        extraLove.classList.add('super-love');
+    } else {
+        loveValue.textContent = displayValue.toLocaleString(); // Adds commas
+    }
+
+    // 2. The "Break the Limit" logic
+    if (rawValue > 95) { // When they get close to the edge
+        nextBtn.style.display = 'block';
+        extraLove.classList.remove('hidden');
+        
+        // Stretch the slider off the right side of the screen
+        const stretch = (rawValue - 95) * 10; 
+        loveMeter.style.width = `calc(100% + ${stretch}px)`;
+        loveMeter.style.transform = `translateX(${stretch / 4}px)`; 
+    } else {
+        nextBtn.style.display = 'none';
         extraLove.classList.add('hidden');
-        nextBtn.style.display = 'none'; // Keep hidden if they slide back down
         loveMeter.style.width = '100%';
+        loveMeter.style.transform = 'translateX(0)';
     }
 });
-
 // Initialize love meter
 window.addEventListener('DOMContentLoaded', setInitialPosition);
 window.addEventListener('load', setInitialPosition);
