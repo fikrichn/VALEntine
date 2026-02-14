@@ -35,10 +35,21 @@ function questionText(id, data) {
     if (!q) return;
 
     q.querySelector('h2').textContent = data.text;
-    if (data.yesBtn) q.querySelector('[id^="yes"]').textContent = data.yesBtn;
-    if (data.noBtn) q.querySelector('[id^="no"]').textContent = data.noBtn;
-    if (data.secretAnswer)
-        document.getElementById('secretAnswerBtn').textContent = data.secretAnswer;
+
+    if (data.yesBtn) {
+        const yes = q.querySelector('.cute-btn[id^="yes"]');
+        if (yes) yes.textContent = data.yesBtn;
+    }
+
+    if (data.noBtn) {
+        const no = q.querySelector('.cute-btn[id^="no"]');
+        if (no) no.textContent = data.noBtn;
+    }
+
+    if (data.nextBtn) {
+        const next = q.querySelector('#nextBtn');
+        if (next) next.textContent = data.nextBtn;
+    }
 }
 
 // ================= FLOW =================
