@@ -160,7 +160,7 @@ const nextBtn = document.getElementById('nextBtn');
 
 function initLoveMeter() {
     loveMeter.value = 0;
-    loveValue.textContent = "0";
+    loveValue.textContent = "0%";
     nextBtn.style.display = 'none';
     extraLove.classList.add('hidden');
 }
@@ -168,25 +168,26 @@ function initLoveMeter() {
 window.addEventListener('DOMContentLoaded', initLoveMeter);
 
 loveMeter.addEventListener('input', () => {
-    const value = Number(loveMeter.value);
-    const max = Number(loveMeter.max);
+    const value = parseInt(loveMeter.value);
+    const max = parseInt(loveMeter.max);
 
-    // Normal volume behavior
     if (value < max) {
-        loveValue.textContent = value.toLocaleString();
+        // Normal behavior: Show the percentage
+        loveValue.textContent = value.toLocaleString() + "%";
         nextBtn.style.display = 'none';
         extraLove.classList.add('hidden');
-    }
-    // Infinity reached
-    else {
-        loveValue.textContent = "∞";
-        nextBtn.style.display = 'block';
-        extraLove.textContent = "Love has exceeded all limits.";
+    } else {
+        // The "Break the Limit" moment
+        loveValue.textContent = "∞%"; 
+        loveValue.style.color = "#ff4d6d"; // Optional: change color for flair
+        extraLove.textContent = "Love has exceeded all limits!";
         extraLove.classList.remove('hidden');
+        
+        // Show the button
+        nextBtn.style.display = 'block';
+        nextBtn.classList.add('fade-in'); // Assuming you have a CSS fade
     }
 });
-
-
 
 // Initialize love meter
 window.addEventListener('DOMContentLoaded', setInitialPosition);
