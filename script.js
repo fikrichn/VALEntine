@@ -159,68 +159,62 @@ const loveValue = document.getElementById('loveValue');
 const extraLove = document.getElementById('extraLove');
 const nextBtn = document.getElementById('nextBtn');
 
-// 2. Initialization Function
+// 2. Clear Initialization
 function initLoveMeter() {
     loveMeter.value = 0;
     loveValue.textContent = "0";
-    loveMeter.style.width = '100%'; // Base width
+    loveMeter.style.width = '100%'; 
+    loveMeter.style.maxWidth = '100%'; // Start contained
     if (nextBtn) nextBtn.style.display = 'none';
-    if (extraLove) extraLove.classList.add('hidden');
 }
 
-// Single listener for setup
 window.addEventListener('DOMContentLoaded', initLoveMeter);
 
-// 3. Logic based on Size & Value
+// 3. The Logic
 loveMeter.addEventListener('input', () => {
     const rawValue = parseInt(loveMeter.value);
     const maxVal = parseInt(loveMeter.max);
     
-    // Calculate progress percentage (0 to 1)
-    const progress = rawValue / 100; 
-
-    // --- PHASE 1: NORMAL (0 to 100) ---
+    // PHASE 1: NORMAL (0 to 100)
     if (rawValue <= 100) {
         loveValue.textContent = rawValue;
-        
-        // Scale width slightly as it moves toward 100
-        // This makes it feel "weighty" even before it breaks
-        loveMeter.style.width = `${100 + (rawValue * 0.2)}%`; 
+        loveMeter.style.width = '100%';
+        loveMeter.style.transform = 'scale(1)'; // No growth yet
         
         if (nextBtn) nextBtn.style.display = 'none';
         extraLove.classList.add('hidden');
     } 
     
-    // --- PHASE 2: OVERFLOW (101+) ---
+    // PHASE 2: OVERFLOW (101+)
     else {
-        // Exponential growth for the number
-        const displayValue = 100 + Math.pow((rawValue - 100), 2);
+        // More "constant" number growth
+        // Linear increase + a small multiplier so it feels fast but steady
+        const displayValue = 100 + (rawValue - 100) * 5000; 
         
-        // Size expansion logic
-        // We calculate how much "extra" width to add based on the overflow
-        const overflowAmount = rawValue - 100;
-        const extraWidth = overflowAmount * 5; // Adjust '5' to make it grow faster/slower
-        
-        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
-        
-        // Show Infinity at the very end
+        // Show Infinity near the end
         if (rawValue >= (maxVal * 0.98)) {
             loveValue.textContent = "∞";
         } else {
             loveValue.textContent = Math.floor(displayValue).toLocaleString();
         }
 
-        // UI Feedback
+        // PHYSICAL GROWTH (Scale based)
+        // Using 'scale' is smoother than 'width' for animations
+        // 1.0 is normal size, 1.5 is 50% bigger
+        const growthFactor = 1 + ((rawValue - 100) / (maxVal - 100)) * 0.5;
+        loveMeter.style.transform = `scaleX(${growthFactor})`;
+        loveMeter.style.width = '100%'; // Keep base width at 100%
+
+        // Show UI elements
         if (nextBtn) nextBtn.style.display = 'block';
         extraLove.classList.remove('hidden');
 
-        // Message Logic
+        // Dynamic Messages
         if (displayValue > 1000000) {
             extraLove.textContent = config.loveMessages.extreme;
-            extraLove.classList.add('super-love');
+            extraLove.style.color = "#ff4d4d"; // Keep it readable
         } else {
             extraLove.textContent = config.loveMessages.high;
-            extraLove.classList.remove('super-love');
         }
     }
 });
