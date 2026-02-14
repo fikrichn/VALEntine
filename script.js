@@ -228,35 +228,31 @@ function setupMusicPlayer() {
 
     if (!config.music.enabled) return;
 
-    // 1. Setup Source and Volume
+    // Setup
     musicSource.src = config.music.musicUrl;
     bgMusic.volume = config.music.volume || 0.5;
-    bgMusic.loop = true; // Ensure it keeps playing
+    bgMusic.loop = true;
+    bgMusic.muted = true; // 🔑 KEY PART
     bgMusic.load();
 
-    // 2. The Autoplay Function
-    const startMusic = () => {
-        bgMusic.play().then(() => {
-            // Success! Music is playing
-            musicToggle.textContent = config.music.stopText;
-            // Remove listeners so we don't keep trying to play
-            window.removeEventListener('click', startMusic);
-            window.removeEventListener('touchstart', startMusic);
-        }).catch(error => {
-            console.log("Waiting for user interaction to play music...");
-        });
+    // Autoplay (allowed because muted)
+    bgMusic.play().then(() => {
+        musicToggle.textContent = config.music.stopText;
+    });
+
+    // First user interaction → unmute
+    const enableSound = () => {
+        bgMusic.muted = false;
+        window.removeEventListener('click', enableSound);
+        window.removeEventListener('touchstart', enableSound);
     };
 
-    // 3. Try to play immediately (might be blocked)
-    startMusic();
+    window.addEventListener('click', enableSound);
+    window.addEventListener('touchstart', enableSound);
 
-    // 4. Fail-safe: Start music on the first click/touch anywhere
-    window.addEventListener('click', startMusic);
-    window.addEventListener('touchstart', startMusic);
-
-    // 5. Manual Toggle Button
+    // Manual toggle
     musicToggle.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent the window listener from firing
+        e.stopPropagation();
         if (bgMusic.paused) {
             bgMusic.play();
             musicToggle.textContent = config.music.stopText;
