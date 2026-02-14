@@ -170,47 +170,53 @@ window.addEventListener('DOMContentLoaded', () => {
     nextBtn.style.display = 'none'; // Hide next button initially
 });
 
+// Initialize the slider at 0
+loveMeter.value = 0;
+loveValue.textContent = 0;
+
 loveMeter.addEventListener('input', () => {
     const rawValue = parseInt(loveMeter.value);
     const nextBtn = document.getElementById('nextBtn');
     
-    // 1. Calculate a "Struggle Value"
-    // From 0-100, it's normal. 
-    // Past 100, we use an exponential curve to make it reach "Infinity"
     let displayValue;
+
+    // 1. SCALING LOGIC
     if (rawValue <= 100) {
+        // Normal behavior from 0 to 100
         displayValue = rawValue;
     } else {
-        // The higher the rawValue, the faster it grows towards infinity
-        // Math.pow makes the gap between numbers feel massive
-        displayValue = 100 + Math.floor(Math.pow((rawValue - 100), 1.5));
+        // "Break the Limit" exponential growth
+        // The further they pull past 100, the faster the numbers fly
+        displayValue = 100 + Math.pow((rawValue - 100), 2);
     }
 
-    // Update text
-    if (displayValue >= 1000000) {
-        loveValue.textContent = "∞"; // Show infinity symbol
-        extraLove.textContent = "LOVE OVERFLOW: INFINITY REACHED";
+    // 2. INFINITY TRIGGER
+    // Assuming your HTML max is set to something like 1000
+    if (rawValue >= 900) { 
+        loveValue.textContent = "∞";
+        extraLove.textContent = config.loveMessages.extreme;
+        extraLove.classList.remove('hidden');
         extraLove.classList.add('super-love');
     } else {
-        loveValue.textContent = displayValue.toLocaleString(); // Adds commas
+        loveValue.textContent = Math.floor(displayValue).toLocaleString();
+        extraLove.classList.add('hidden');
     }
 
-    // 2. The "Break the Limit" logic
-    if (rawValue > 95) { // When they get close to the edge
-        nextBtn.style.display = 'block';
-        extraLove.classList.remove('hidden');
+    // 3. PHYSICAL STRETCH (The "Pull" Effect)
+    if (rawValue > 100) {
+        // The slider starts growing wider than its container
+        const pullDistance = (rawValue - 100) * 2; 
+        loveMeter.style.width = `calc(100% + ${pullDistance}px)`;
         
-        // Stretch the slider off the right side of the screen
-        const stretch = (rawValue - 95) * 10; 
-        loveMeter.style.width = `calc(100% + ${stretch}px)`;
-        loveMeter.style.transform = `translateX(${stretch / 4}px)`; 
+        // Push the button into view once they start "breaking" the limit
+        nextBtn.style.display = 'block';
+        nextBtn.style.opacity = '1';
     } else {
-        nextBtn.style.display = 'none';
-        extraLove.classList.add('hidden');
         loveMeter.style.width = '100%';
-        loveMeter.style.transform = 'translateX(0)';
+        nextBtn.style.display = 'none';
     }
 });
+
 // Initialize love meter
 window.addEventListener('DOMContentLoaded', setInitialPosition);
 window.addEventListener('load', setInitialPosition);
