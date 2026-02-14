@@ -153,77 +153,68 @@ function moveButton(button) {
     button.style.zIndex = "1000"; // Pastikan tombol selalu di atas elemen lain
 }
 
-// Love meter functionality
+// 1. Elements
 const loveMeter = document.getElementById('loveMeter');
 const loveValue = document.getElementById('loveValue');
 const extraLove = document.getElementById('extraLove');
+const nextBtn = document.getElementById('nextBtn');
 
-function setInitialPosition() {
-    loveMeter.value = 100;
-    loveValue.textContent = 100;
-    loveMeter.style.width = '100%';
-}
-
-// At the top of your script, ensure the Next button starts hidden or disabled
-window.addEventListener('DOMContentLoaded', () => {
-    const nextBtn = document.getElementById('nextBtn');
-    nextBtn.style.display = 'none'; // Hide next button initially
-});
-
-// At the top of your script, ensure the Next button starts hidden or disabled
-window.addEventListener('DOMContentLoaded', () => {
-    const nextBtn = document.getElementById('nextBtn');
-    nextBtn.style.display = 'none'; // Hide next button initially
-});
-
-// 1. Initialize at 0 when the page loads
-window.addEventListener('DOMContentLoaded', () => {
+// 2. Initialization Function
+function initLoveMeter() {
     loveMeter.value = 0;
     loveValue.textContent = "0";
-});
+    loveMeter.style.width = '100%'; // Base width
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (extraLove) extraLove.classList.add('hidden');
+}
 
+// Single listener for setup
+window.addEventListener('DOMContentLoaded', initLoveMeter);
+
+// 3. Logic based on Size & Value
 loveMeter.addEventListener('input', () => {
     const rawValue = parseInt(loveMeter.value);
-    const nextBtn = document.getElementById('nextBtn');
+    const maxVal = parseInt(loveMeter.max);
     
-    // 1. NORMAL PHASE (0 to 100)
+    // Calculate progress percentage (0 to 1)
+    const progress = rawValue / 100; 
+
+    // --- PHASE 1: NORMAL (0 to 100) ---
     if (rawValue <= 100) {
-        // Display the number exactly as it is (0, 1, 2, 3...)
         loveValue.textContent = rawValue;
         
-        // Keep the slider its NORMAL natural size
-        loveMeter.style.width = '100%'; 
-        loveMeter.style.transform = 'translateX(0)';
+        // Scale width slightly as it moves toward 100
+        // This makes it feel "weighty" even before it breaks
+        loveMeter.style.width = `${100 + (rawValue * 0.2)}%`; 
         
-        // Hide "Next" and extra messages until they break 100
         if (nextBtn) nextBtn.style.display = 'none';
         extraLove.classList.add('hidden');
-        
     } 
-    // 2. INFINITE PHASE (101+)
+    
+    // --- PHASE 2: OVERFLOW (101+) ---
     else {
-        // Make the numbers skyrocket exponentially
+        // Exponential growth for the number
         const displayValue = 100 + Math.pow((rawValue - 100), 2);
         
-        // Show the "Infinity" symbol if they reach the far end
-        if (rawValue >= (loveMeter.max * 0.95)) {
+        // Size expansion logic
+        // We calculate how much "extra" width to add based on the overflow
+        const overflowAmount = rawValue - 100;
+        const extraWidth = overflowAmount * 5; // Adjust '5' to make it grow faster/slower
+        
+        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
+        
+        // Show Infinity at the very end
+        if (rawValue >= (maxVal * 0.98)) {
             loveValue.textContent = "∞";
         } else {
             loveValue.textContent = Math.floor(displayValue).toLocaleString();
         }
 
-        // PHYSICAL STRETCH: Only happens AFTER 100
-        // We calculate how far past 100 they are and add that to the width
-        const overflow = (rawValue - 100) / (loveMeter.max - 100);
-        const addedWidth = overflow * window.innerWidth * 1.2;
-        
-        loveMeter.style.width = `calc(100% + ${addedWidth}px)`;
-        
-        // Reveal the "Next" button and messages
+        // UI Feedback
         if (nextBtn) nextBtn.style.display = 'block';
         extraLove.classList.remove('hidden');
 
-        // Dynamic messages
+        // Message Logic
         if (displayValue > 1000000) {
             extraLove.textContent = config.loveMessages.extreme;
             extraLove.classList.add('super-love');
