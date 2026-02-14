@@ -92,9 +92,12 @@ function initLoveMeter() {
     const meter = document.getElementById('loveMeter');
     if (!meter) return;
 
-    const value = document.getElementById('loveValue');
-    const nextBtn = document.getElementById('nextBtn');
-    const extra = document.getElementById('extraLove');
+    // 🔥 ambil parent question aktif
+    const question = meter.closest('.question-section');
+
+    const value = question.querySelector('#loveValue');
+    const nextBtn = question.querySelector('#nextBtn');
+    const extra = question.querySelector('#extraLove');
 
     meter.value = 0;
     nextBtn.style.display = 'none';
