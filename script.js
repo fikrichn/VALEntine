@@ -227,7 +227,7 @@ function getCellSize() {
 
 
 function startMinesweeper() {
-    document.getElementById('celebration').style.display = 'none';
+    document.getElementById('celebration').style.display = 'hidden';
 
     const game = document.getElementById('minesweeper');
     game.classList.remove('hidden');
@@ -301,11 +301,6 @@ function showGameOver(container, bombs, grid) {
     tryAgainBtn.onclick = () => {
     startMinesweeper(); // 💣 posisi sama
     };
-    container.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener('click', () => {
-        startMinesweeper();
-    });
-
     container.appendChild(msg);
     container.appendChild(tryAgainBtn);
 }
