@@ -112,11 +112,6 @@ function initLoveMeter() {
             extra.textContent = "Love beyond limits ❤️";
             extra.classList.remove('hidden');
             nextBtn.style.display = 'block';
-
-            // fix khusus btn2
-            if (config.questions?.second?.nextBtn) {
-                nextBtn.textContent = config.questions.second.nextBtn;
-            }
         }
     });
 }
