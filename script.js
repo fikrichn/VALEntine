@@ -183,55 +183,53 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 loveMeter.addEventListener('input', () => {
-    // rawValue will go 0, 1, 2, 3... based on your slider's movement
     const rawValue = parseInt(loveMeter.value);
     const nextBtn = document.getElementById('nextBtn');
     
-    let displayValue;
-
-    // 2. NORMAL COUNTING (0 to 100)
+    // 1. NORMAL PHASE (0 to 100)
     if (rawValue <= 100) {
-        displayValue = rawValue;
-        loveValue.textContent = displayValue;
+        // Display the number exactly as it is (0, 1, 2, 3...)
+        loveValue.textContent = rawValue;
         
-        // Keep UI clean and button hidden
-        extraLove.classList.add('hidden');
-        loveMeter.style.width = '100%';
+        // Keep the slider its NORMAL natural size
+        loveMeter.style.width = '100%'; 
+        loveMeter.style.transform = 'translateX(0)';
+        
+        // Hide "Next" and extra messages until they break 100
         if (nextBtn) nextBtn.style.display = 'none';
+        extraLove.classList.add('hidden');
         
-    } else {
-        // 3. THE "BREAK" (Above 100)
-        // Make the display value skyrocket exponentially
-        displayValue = 100 + Math.pow((rawValue - 100), 2);
+    } 
+    // 2. INFINITE PHASE (101+)
+    else {
+        // Make the numbers skyrocket exponentially
+        const displayValue = 100 + Math.pow((rawValue - 100), 2);
         
-        // Show Next Button and Extra Messages
-        if (nextBtn) nextBtn.style.display = 'block';
-        extraLove.classList.remove('hidden');
-
-        // Check for Infinity at the end of the physical slider
+        // Show the "Infinity" symbol if they reach the far end
         if (rawValue >= (loveMeter.max * 0.95)) {
             loveValue.textContent = "∞";
         } else {
             loveValue.textContent = Math.floor(displayValue).toLocaleString();
         }
 
-        // 4. STRETCH THE SLIDER (Physical "Pull" Effect)
-        // The bar grows wider than the screen as you pull past 100
-        const overflowPercentage = (rawValue - 100) / (loveMeter.max - 100);
-        const extraWidth = overflowPercentage * window.innerWidth * 1.2; 
+        // PHYSICAL STRETCH: Only happens AFTER 100
+        // We calculate how far past 100 they are and add that to the width
+        const overflow = (rawValue - 100) / (loveMeter.max - 100);
+        const addedWidth = overflow * window.innerWidth * 1.2;
         
-        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
-        loveMeter.style.transition = 'width 0.1s ease-out';
+        loveMeter.style.width = `calc(100% + ${addedWidth}px)`;
+        
+        // Reveal the "Next" button and messages
+        if (nextBtn) nextBtn.style.display = 'block';
+        extraLove.classList.remove('hidden');
 
-        // Update messages based on the huge numbers
-        if (displayValue >= 1000000) {
-            extraLove.classList.add('super-love');
+        // Dynamic messages
+        if (displayValue > 1000000) {
             extraLove.textContent = config.loveMessages.extreme;
-        } else if (displayValue > 1000) {
-            extraLove.classList.remove('super-love');
-            extraLove.textContent = config.loveMessages.high;
+            extraLove.classList.add('super-love');
         } else {
-            extraLove.textContent = config.loveMessages.normal;
+            extraLove.textContent = config.loveMessages.high;
+            extraLove.classList.remove('super-love');
         }
     }
 });
