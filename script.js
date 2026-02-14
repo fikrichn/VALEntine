@@ -155,39 +155,37 @@ function moveButton(button) {
 
 const loveMeter = document.getElementById('loveMeter');
 const loveValue = document.getElementById('loveValue');
-const nextBtn = document.getElementById('nextBtn');
 const extraLove = document.getElementById('extraLove');
+const nextBtn = document.getElementById('nextBtn');
 
 function initLoveMeter() {
     loveMeter.value = 0;
     loveValue.textContent = "0";
-    loveMeter.style.transform = 'none';
-    loveMeter.style.width = '100%';
-
-    if (nextBtn) nextBtn.style.display = 'none';
-    if (extraLove) extraLove.classList.add('hidden');
+    nextBtn.style.display = 'none';
+    extraLove.classList.add('hidden');
 }
 
 window.addEventListener('DOMContentLoaded', initLoveMeter);
 
 loveMeter.addEventListener('input', () => {
     const value = Number(loveMeter.value);
+    const max = Number(loveMeter.max);
 
-    // Normal linear value (like volume)
-    loveValue.textContent = value;
-
-    // Optional logic
-    if (value === 100) {
-        if (nextBtn) nextBtn.style.display = 'block';
-        if (extraLove) {
-            extraLove.textContent = "Max volume ❤️";
-            extraLove.classList.remove('hidden');
-        }
-    } else {
-        if (nextBtn) nextBtn.style.display = 'none';
-        if (extraLove) extraLove.classList.add('hidden');
+    // Normal volume behavior
+    if (value < max) {
+        loveValue.textContent = value.toLocaleString();
+        nextBtn.style.display = 'none';
+        extraLove.classList.add('hidden');
+    }
+    // Infinity reached
+    else {
+        loveValue.textContent = "∞";
+        nextBtn.style.display = 'block';
+        extraLove.textContent = "Love has exceeded all limits.";
+        extraLove.classList.remove('hidden');
     }
 });
+
 
 
 // Initialize love meter
