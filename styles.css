@@ -316,3 +316,16 @@ h2 {
     transform: scale(1.05);
     background: var(--secondary-color);
 } 
+
+#minesweeper {
+    padding: 16px;
+    text-align: center;
+}
+
+#minesweeper h2 {
+    font-size: clamp(18px, 5vw, 24px);
+}
+
+#minesweeper button {
+    -webkit-tap-highlight-color: transparent;
+}

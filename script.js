@@ -4,6 +4,11 @@ const config = window.VALENTINE_CONFIG;
 let noScale = 1;
 let yesScale = 1;
 
+let minesweeperBombs = null;
+let minesweeperSize = 5;
+let minesweeperBombCount = 5;
+
+
 // Validate configuration
 function validateConfig() {
     const warnings = [];
@@ -176,6 +181,7 @@ function celebrate() {
     
     // 5. Jalankan efek hati
     createHeartExplosion();
+    addProveLoveButton();
 }
 
 function createHeartExplosion() {
@@ -187,6 +193,121 @@ function createHeartExplosion() {
         document.querySelector('.floating-elements').appendChild(heart);
         setRandomPosition(heart);
     }
+}
+
+function addProveLoveButton() {
+    const celebration = document.getElementById('celebration');
+
+    const proveBtn = document.createElement('button');
+    proveBtn.id = 'proveLoveBtn';
+    proveBtn.textContent = 'Are you really love me? 😋';
+
+    Object.assign(proveBtn.style, {
+        marginTop: '20px',
+        padding: '12px 20px',
+        fontSize: '16px',
+        borderRadius: '12px',
+        border: 'none',
+        cursor: 'pointer',
+        background: '#ff4d6d',
+        color: 'white'
+    });
+
+    proveBtn.addEventListener('click', startMinesweeper);
+
+    celebration.appendChild(proveBtn);
+}
+
+function getCellSize() {
+    const screenWidth = window.innerWidth;
+    const padding = 40; // aman dari pinggir
+    const maxGridWidth = screenWidth - padding;
+    return Math.floor(maxGridWidth / minesweeperSize);
+}
+
+
+function startMinesweeper() {
+    document.getElementById('celebration').style.display = 'none';
+
+    const game = document.getElementById('minesweeper');
+    game.classList.remove('hidden');
+    game.innerHTML = '<h2>Prove Your Love 💣❤️</h2>';
+
+    let gameOver = false;
+
+    // 🔥 BUAT BOM HANYA SEKALI
+    if (!minesweeperBombs) {
+        minesweeperBombs = new Set();
+        while (minesweeperBombs.size < minesweeperBombCount) {
+            minesweeperBombs.add(
+                Math.floor(Math.random() * minesweeperSize * minesweeperSize)
+            );
+        }
+    }
+
+    const grid = document.createElement('div');
+    const cellSize = Math.min(getCellSize(), 60); // max 60px biar desktop tetap cakep
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = `repeat(${minesweeperSize}, ${cellSize}px)`;
+    grid.style.gap = Math.max(4, cellSize * 0.12) + 'px';
+    grid.style.marginTop = '20px';
+    grid.style.justifyContent = 'center';
+
+
+    for (let i = 0; i < minesweeperSize * minesweeperSize; i++) {
+        const cell = document.createElement('button');
+            cell.style.width = cellSize + 'px';
+            cell.style.height = cellSize + 'px';
+            cell.style.fontSize = Math.floor(cellSize * 0.45) + 'px';
+            cell.style.borderRadius = '10px';
+            cell.style.touchAction = 'manipulation'; // penting buat HP
+
+
+        cell.addEventListener('click', () => {
+            if (gameOver || cell.disabled) return;
+
+            if (minesweeperBombs.has(i)) {
+                cell.textContent = '💣';
+                cell.style.background = '#ff4d6d';
+                gameOver = true;
+                showGameOver(game, minesweeperBombs, grid);
+            } else {
+                cell.textContent = '❤️';
+                cell.disabled = true;
+            }
+        });
+
+        grid.appendChild(cell);
+    }
+
+    game.appendChild(grid);
+}
+
+
+function showGameOver(container, bombs, grid) {
+    // Reveal all bombs
+    bombs.forEach(i => {
+        const cell = grid.children[i];
+        cell.textContent = '💣';
+    });
+
+    const msg = document.createElement('p');
+    msg.textContent = 'Boom 💥 Love is hard, try again!';
+    msg.className = 'game-message'; // optional kalau ada
+
+    const templateBtn = document.getElementById('nextBtn');
+    const tryAgainBtn = templateBtn.cloneNode(true);
+    tryAgainBtn.textContent = 'Try Again';
+    tryAgainBtn.onclick = () => {
+    startMinesweeper(); // 💣 posisi sama
+    };
+    container.appendChild(tryAgainBtn);
+    tryAgainBtn.addEventListener('click', () => {
+        startMinesweeper();
+    });
+
+    container.appendChild(msg);
+    container.appendChild(tryAgainBtn);
 }
 
 function setupMusicPlayer() {
