@@ -148,20 +148,33 @@ function initLoveMeter() {
 }
 
 function celebrate() {
+    // 1. Sembunyikan semua section pertanyaan sebelumnya
     document.querySelectorAll('.question-section').forEach(q => {
         q.classList.add('hidden');
         q.style.display = 'none';
     });
+
+    // 2. Tampilkan container celebration
     const celebration = document.getElementById('celebration');
     celebration.classList.remove('hidden');
     celebration.style.display = 'flex';
     celebration.style.flexDirection = 'column';
     celebration.style.alignItems = 'center';
     
+    // 3. Isi teks dari config
     document.getElementById('celebrationTitle').textContent = config.celebration.title;
     document.getElementById('celebrationMessage').textContent = config.celebration.message;
-    document.getElementById('celebrationEmojis').textContent = config.celebration.emojis;
     
+    // 4. MENGUBAH EMOJI MENJADI GIF
+    // Kita ganti textContent menjadi innerHTML agar bisa membaca tag <img>
+    const emojiArea = document.getElementById('celebrationEmojis');
+    emojiArea.innerHTML = `
+        <img src="https://media.tenor.com/VhCWjJwTXNAAAAAi/happy-happy-happy.gif" 
+             alt="Happy Valentine GIF" 
+             style="width: 1000px; height: auto; margin-top: 15px; border-radius: 20px;">
+    `;
+    
+    // 5. Jalankan efek hati
     createHeartExplosion();
 }
 
