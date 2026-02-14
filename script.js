@@ -122,35 +122,39 @@ function moveButton(button) {
 }
 
 function initLoveMeter() {
-    const loveMeter = document.getElementById('loveMeter');
-    const loveValue = document.getElementById('loveValue');
-    const nextBtn = document.getElementById('nextBtn');
-    const extraLove = document.getElementById('extraLove');
+    const meter = document.getElementById('loveMeter');
+    if (!meter) return;
 
-    if (!loveMeter) return;
+    const question = meter.closest('.question-section');
 
-    loveMeter.value = 0;
-    loveValue.textContent = "0";
+    // 🔥 FIX: pastikan ini memang question 2
+    if (question.id !== 'question2') return;
+
+    const value = question.querySelector('#loveValue');
+    const nextBtn = question.querySelector('#nextBtn');
+    const extra = question.querySelector('#extraLove');
+
+    meter.value = 0;
     nextBtn.style.display = 'none';
 
-    loveMeter.addEventListener('input', () => {
-        const value = parseInt(loveMeter.value);
-        const max = parseInt(loveMeter.max);
-
-        if (value < max) {
-            loveValue.textContent = value.toLocaleString();
+    meter.addEventListener('input', () => {
+        if (+meter.value < +meter.max) {
+            value.textContent = meter.value;
+            extra.classList.add('hidden');
             nextBtn.style.display = 'none';
-            extraLove.classList.add('hidden');
         } else {
-            loveValue.textContent = "∞"; 
-            loveValue.style.color = "#ff4d6d";
-            extraLove.textContent = "Love has exceeded all limits!";
-            extraLove.classList.remove('hidden');
+            value.textContent = "∞";
+            extra.classList.remove('hidden');
             nextBtn.style.display = 'block';
-            nextBtn.style.margin = "20px auto"; // Agar tombol di tengah
+
+            // pastikan text WOW balik
+            if (config.questions?.second?.nextBtn) {
+                nextBtn.textContent = config.questions.second.nextBtn;
+            }
         }
     });
 }
+
 
 function celebrate() {
     // 1. Sembunyikan semua section pertanyaan sebelumnya
