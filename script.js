@@ -174,46 +174,49 @@ window.addEventListener('DOMContentLoaded', () => {
 loveMeter.value = 0;
 loveValue.textContent = 0;
 
+// At the top of your script, ensure the Next button starts hidden or disabled
+window.addEventListener('DOMContentLoaded', () => {
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.style.display = 'none'; // Hide next button initially
+});
+
 loveMeter.addEventListener('input', () => {
-    const rawValue = parseInt(loveMeter.value);
+    let value = parseInt(loveMeter.value);
     const nextBtn = document.getElementById('nextBtn');
     
-    let displayValue;
-
-    // 1. SCALING LOGIC
-    if (rawValue <= 100) {
-        // Normal behavior from 0 to 100
-        displayValue = rawValue;
-    } else {
-        // "Break the Limit" exponential growth
-        // The further they pull past 100, the faster the numbers fly
-        displayValue = 100 + Math.pow((rawValue - 100), 2);
+    // --- THE "HARD MODE" LOGIC ---
+    // Even if they slide to the end, we can artificially cap the display value
+    // or make the slider require more effort to reach high numbers.
+    if (value > 100) {
+        // This makes the value climb much slower than the actual slider movement
+        // It feels like the slider is "heavy"
+        value = 100 + Math.floor((value - 100) / 50); 
     }
-
-    // 2. INFINITY TRIGGER
-    // Assuming your HTML max is set to something like 1000
-    if (rawValue >= 900) { 
-        loveValue.textContent = "∞";
-        extraLove.textContent = config.loveMessages.extreme;
+    
+    loveValue.textContent = value;
+    
+    if (value > 100) {
+        // Break the limit!
         extraLove.classList.remove('hidden');
-        extraLove.classList.add('super-love');
-    } else {
-        loveValue.textContent = Math.floor(displayValue).toLocaleString();
-        extraLove.classList.add('hidden');
-    }
-
-    // 3. PHYSICAL STRETCH (The "Pull" Effect)
-    if (rawValue > 100) {
-        // The slider starts growing wider than its container
-        const pullDistance = (rawValue - 100) * 2; 
-        loveMeter.style.width = `calc(100% + ${pullDistance}px)`;
+        nextBtn.style.display = 'block'; // Reveal the button only after 100%
         
-        // Push the button into view once they start "breaking" the limit
-        nextBtn.style.display = 'block';
-        nextBtn.style.opacity = '1';
+        // Visual feedback: the slider physically grows
+        const overflowPercentage = (value - 100) / 100;
+        const extraWidth = overflowPercentage * 50; // Grows slightly
+        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
+        
+        // Logic for messages based on your config
+        if (value >= 200) { // Much harder to reach now
+            extraLove.classList.add('super-love');
+            extraLove.textContent = config.loveMessages.extreme;
+        } else {
+            extraLove.classList.remove('super-love');
+            extraLove.textContent = config.loveMessages.high;
+        }
     } else {
+        extraLove.classList.add('hidden');
+        nextBtn.style.display = 'none'; // Keep hidden if they slide back down
         loveMeter.style.width = '100%';
-        nextBtn.style.display = 'none';
     }
 });
 
