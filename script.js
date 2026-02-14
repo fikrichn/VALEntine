@@ -153,71 +153,42 @@ function moveButton(button) {
     button.style.zIndex = "1000"; // Pastikan tombol selalu di atas elemen lain
 }
 
-// 1. Elements
 const loveMeter = document.getElementById('loveMeter');
 const loveValue = document.getElementById('loveValue');
-const extraLove = document.getElementById('extraLove');
 const nextBtn = document.getElementById('nextBtn');
+const extraLove = document.getElementById('extraLove');
 
-// 2. Clear Initialization
 function initLoveMeter() {
     loveMeter.value = 0;
     loveValue.textContent = "0";
-    loveMeter.style.width = '100%'; 
-    loveMeter.style.maxWidth = '100%'; // Start contained
+    loveMeter.style.transform = 'none';
+    loveMeter.style.width = '100%';
+
     if (nextBtn) nextBtn.style.display = 'none';
+    if (extraLove) extraLove.classList.add('hidden');
 }
 
 window.addEventListener('DOMContentLoaded', initLoveMeter);
 
-// 3. The Logic
 loveMeter.addEventListener('input', () => {
-    const rawValue = parseInt(loveMeter.value);
-    const maxVal = parseInt(loveMeter.max);
-    
-    // PHASE 1: NORMAL (0 to 100)
-    if (rawValue <= 100) {
-        loveValue.textContent = rawValue;
-        loveMeter.style.width = '100%';
-        loveMeter.style.transform = 'scale(1)'; // No growth yet
-        
-        if (nextBtn) nextBtn.style.display = 'none';
-        extraLove.classList.add('hidden');
-    } 
-    
-    // PHASE 2: OVERFLOW (101+)
-    else {
-        // More "constant" number growth
-        // Linear increase + a small multiplier so it feels fast but steady
-        const displayValue = 100 + (rawValue - 100) * 5000; 
-        
-        // Show Infinity near the end
-        if (rawValue >= (maxVal * 0.98)) {
-            loveValue.textContent = "∞";
-        } else {
-            loveValue.textContent = Math.floor(displayValue).toLocaleString();
-        }
+    const value = Number(loveMeter.value);
 
-        // PHYSICAL GROWTH (Scale based)
-        // Using 'scale' is smoother than 'width' for animations
-        // 1.0 is normal size, 1.5 is 50% bigger
-        const growthFactor = 1 + ((rawValue - 100) / (maxVal - 100)) * 0.5;
-        loveMeter.style.transform = `scaleX(${growthFactor})`;
-        loveMeter.style.width = '100%'; // Keep base width at 100%
+    // Normal linear value (like volume)
+    loveValue.textContent = value;
 
-        // Show UI elements
+    // Optional logic
+    if (value === 100) {
         if (nextBtn) nextBtn.style.display = 'block';
-        extraLove.classList.remove('hidden');
-
-        // Dynamic Messages
-        if (displayValue > 1000000) {
-            extraLove.textContent = config.loveMessages.extreme;
-            extraLove.style.color = "#ff4d4d"; // Keep it readable
-        } else {
-            extraLove.textContent = config.loveMessages.high;
+        if (extraLove) {
+            extraLove.textContent = "Max volume ❤️";
+            extraLove.classList.remove('hidden');
         }
+    } else {
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (extraLove) extraLove.classList.add('hidden');
     }
 });
+
 
 // Initialize love meter
 window.addEventListener('DOMContentLoaded', setInitialPosition);
